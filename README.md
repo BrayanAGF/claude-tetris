@@ -135,12 +135,12 @@ init()
      ├─ acumula dt
      ├─ si dt ≥ dropInterval → baja la pieza o llama a lockPiece()
      ├─ draw()  (grid + tablero + ghost + pieza actual)
-     └─ requestAnimationFrame(loop)
+     └─ requestAnimationFrame(loop)  (solo si no hay game over)
 
    keydown → mover / rotar / soft-drop / hard-drop / pausa
 ```
 
-Cuando una pieza recién generada ya colisiona al aparecer (`spawn`), se dispara `endGame()` y se muestra el overlay de **Game Over**.
+Cuando una pieza recién generada ya colisiona al aparecer (`spawn`), se dispara `endGame()` y se muestra el overlay de **Game Over**. Como `endGame()` puede ejecutarse dentro de `loop`, donde `cancelAnimationFrame` ya no tiene frame pendiente que cancelar, `loop` comprueba `gameOver` antes de pedir el siguiente frame.
 
 ---
 
