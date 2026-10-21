@@ -35,6 +35,7 @@ Es una versión jugable del Tetris clásico con todas las mecánicas que esperar
 
 - Tablero de **10 × 20** celdas.
 - Las **7 piezas estándar** (I, O, T, S, Z, J, L) con colores diferenciados.
+- Una pieza reto, la **Turca**: un anillo 3 × 3 de 8 bloques con el centro vacío. El hueco solo puede rellenarse si queda accesible desde arriba, así que obliga a planificar dónde colocarla. Sale con la misma probabilidad que las demás (1 de cada 8).
 - **Rotación** con _wall kicks_ básicos (pequeños desplazamientos para que la pieza pueda rotar pegada a la pared).
 - **Soft drop** (bajada acelerada) y **hard drop** (caída instantánea).
 - **Pieza fantasma** (_ghost piece_): muestra dónde aterrizará la pieza actual.
@@ -111,8 +112,8 @@ Aporta el aspecto visual con estética _dark / retro arcade_: fondo oscuro, tipo
 
 Contiene toda la lógica del juego. A grandes rasgos:
 
-- **Modelo del tablero**: una matriz `ROWS × COLS` donde cada celda guarda `0` (vacía) o un índice de color (1–7) que identifica la pieza.
-- **Piezas**: definidas como matrices cuadradas. Para rotar se calcula la transposición + reverso de filas (`rotateCW`).
+- **Modelo del tablero**: una matriz `ROWS × COLS` donde cada celda guarda `0` (vacía) o un índice de color (1–8) que identifica la pieza.
+- **Piezas**: definidas como matrices cuadradas en `PIECES`. Para rotar se calcula la transposición + reverso de filas (`rotateCW`). `randomPiece` sortea entre todas las entradas de `PIECES`, así que añadir una pieza solo requiere añadir su matriz y su color en `COLORS` y `COLORS_LIGHT`.
 - **Detección de colisiones** (`collide`): comprueba que ninguna celda de la pieza salga del tablero ni se solape con bloques ya fijados.
 - **Wall kicks** (`tryRotate`): si la rotación choca, intenta desplazar la pieza ±1 y ±2 columnas antes de descartar el giro.
 - **Game loop** (`loop`): basado en `requestAnimationFrame`, acumula el tiempo transcurrido y baja la pieza una fila cuando se supera `dropInterval`.
@@ -177,8 +178,9 @@ Algunos parámetros fáciles de tunear en `game.js`:
 | `COLS`         | Columnas del tablero                     | `10`                  |
 | `ROWS`         | Filas del tablero                        | `20`                  |
 | `BLOCK`        | Tamaño en píxeles de cada celda          | `30`                  |
-| `COLORS`       | Paleta de colores por tipo de pieza      | 7 colores             |
-| `COLORS_LIGHT` | Paleta de piezas del tema claro          | 7 colores             |
+| `PIECES`       | Formas de las piezas que se sortean      | 8 piezas              |
+| `COLORS`       | Paleta de colores por tipo de pieza      | 8 colores             |
+| `COLORS_LIGHT` | Paleta de piezas del tema claro          | 8 colores             |
 | `THEME_KEY`    | Clave de `localStorage` del tema         | `'tetris-theme'`      |
 | `DEFAULT_THEME`| Tema inicial si no hay valor guardado    | `'dark'`              |
 | `LINE_SCORES`  | Puntos por 1, 2, 3 o 4 líneas eliminadas | `[0,100,300,500,800]` |
