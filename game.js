@@ -15,6 +15,18 @@ const COLORS = [
   '#ffb74d', // L - orange
 ];
 
+// Paleta del tema claro: mismos índices que COLORS, más saturada para contrastar con el fondo blanco
+const COLORS_LIGHT = [
+  null,
+  '#00acc1', // I
+  '#f9a825', // O
+  '#8e24aa', // T
+  '#43a047', // S
+  '#e53935', // Z
+  '#3f6fe0', // J
+  '#fb8c00', // L
+];
+
 const PIECES = [
   null,
   [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]], // I
@@ -28,6 +40,9 @@ const PIECES = [
 
 const LINE_SCORES = [0, 100, 300, 500, 800];
 
+const THEME_KEY = 'tetris-theme';
+const DEFAULT_THEME = 'dark';
+
 const canvas = document.getElementById('board');
 const ctx = canvas.getContext('2d');
 const nextCanvas = document.getElementById('next-canvas');
@@ -39,7 +54,10 @@ const overlay = document.getElementById('overlay');
 const overlayTitle = document.getElementById('overlay-title');
 const overlayScore = document.getElementById('overlay-score');
 const restartBtn = document.getElementById('restart-btn');
+const themeToggle = document.getElementById('theme-toggle');
+const themeToggleText = document.getElementById('theme-toggle-text');
 
+let theme = DEFAULT_THEME;
 let board, current, next, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId;
 
 function createBoard() {
@@ -158,7 +176,7 @@ function updateHUD() {
 
 function drawBlock(context, x, y, colorIndex, size, alpha) {
   if (!colorIndex) return;
-  const color = COLORS[colorIndex];
+  const color = (theme === 'light' ? COLORS_LIGHT : COLORS)[colorIndex];
   context.globalAlpha = alpha ?? 1;
   context.fillStyle = color;
   context.fillRect(x * size + 1, y * size + 1, size - 2, size - 2);
@@ -169,7 +187,7 @@ function drawBlock(context, x, y, colorIndex, size, alpha) {
 }
 
 function drawGrid() {
-  ctx.strokeStyle = '#22222e';
+  ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--grid').trim();
   ctx.lineWidth = 0.5;
   for (let c = 1; c < COLS; c++) {
     ctx.beginPath();
@@ -256,6 +274,33 @@ function loop(ts) {
   animId = requestAnimationFrame(loop);
 }
 
+function setTheme(newTheme, save = true) {
+  theme = newTheme === 'light' ? 'light' : 'dark';
+  document.documentElement.dataset.theme = theme;
+  const isLight = theme === 'light';
+  themeToggle.setAttribute('aria-checked', String(isLight));
+  // El texto indica la acción que realizará el botón
+  const label = isLight ? 'Modo oscuro' : 'Modo claro';
+  themeToggle.setAttribute('aria-label', label);
+  themeToggleText.textContent = label;
+  if (save) {
+    try { localStorage.setItem(THEME_KEY, theme); } catch (e) { /* almacenamiento no disponible */ }
+  }
+  // Con pausa o game over no hay bucle de render, así que se redibuja a mano
+  if (current && next) {
+    draw();
+    drawNext();
+  }
+}
+
+function loadTheme() {
+  try {
+    return localStorage.getItem(THEME_KEY) || DEFAULT_THEME;
+  } catch (e) {
+    return DEFAULT_THEME;
+  }
+}
+
 function init() {
   board = createBoard();
   score = 0;
@@ -301,4 +346,11 @@ document.addEventListener('keydown', e => {
 
 restartBtn.addEventListener('click', init);
 
+themeToggle.addEventListener('click', () => {
+  setTheme(theme === 'light' ? 'dark' : 'light');
+  // Quita el foco para que Espacio/Enter no reactiven el botón mientras se juega
+  themeToggle.blur();
+});
+
+setTheme(loadTheme(), false);
 init();

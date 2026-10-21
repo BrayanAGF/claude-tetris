@@ -42,6 +42,7 @@ Es una versión jugable del Tetris clásico con todas las mecánicas que esperar
 - **Sistema de puntuación** clásico de Tetris (100 / 300 / 500 / 800 multiplicado por nivel).
 - **Niveles** que aumentan cada 10 líneas y aceleran la caída.
 - **Pausa** y **Game Over** con opción de reinicio.
+- **Modo oscuro / claro**: interruptor en el panel lateral. Arranca en oscuro por defecto; la elección se guarda en `localStorage` (clave `tetris-theme`).
 
 ---
 
@@ -86,6 +87,8 @@ Después abre `http://localhost:8000` en el navegador.
 | `Espacio` | Hard drop (caída instantánea)     |
 | `P`       | Pausar / reanudar                 |
 
+El interruptor **Modo claro / Modo oscuro** del panel lateral (solo con ratón, sin atajo de teclado) cambia el tema.
+
 ---
 
 ## Cómo funciona
@@ -102,7 +105,7 @@ Define la estructura visual:
 
 ### 2. `style.css`
 
-Aporta el aspecto visual con estética _dark / retro arcade_: fondo oscuro, tipografía monoespaciada para los marcadores y _backdrop blur_ en los overlays.
+Aporta el aspecto visual con estética _dark / retro arcade_: fondo oscuro, tipografía monoespaciada para los marcadores y _backdrop blur_ en los overlays. Los colores son variables CSS definidas en `:root` (tema oscuro) y sobrescritas en `:root[data-theme="light"]` (tema claro).
 
 ### 3. `game.js`
 
@@ -116,6 +119,7 @@ Contiene toda la lógica del juego. A grandes rasgos:
 - **Limpieza de líneas** (`clearLines`): recorre el tablero de abajo hacia arriba; cada fila completa se elimina y se inserta una vacía en la cima.
 - **Puntuación**: usa la tabla clásica `[0, 100, 300, 500, 800]` multiplicada por el nivel actual; el hard drop suma 2 puntos por celda recorrida y el soft drop 1 punto por fila.
 - **Nivel y velocidad**: el nivel sube cada 10 líneas; la velocidad de caída se calcula como `max(100, 1000 − (level − 1) × 90)` milisegundos.
+- **Temas** (`setTheme`, `loadTheme`): `setTheme` fija `data-theme` en `<html>`, actualiza el botón, guarda la elección en `localStorage` (dentro de `try/catch`) y redibuja tablero y vista previa, también en pausa o game over. `drawGrid` lee la variable CSS `--grid` y `drawBlock` usa `COLORS` (oscuro) o `COLORS_LIGHT` (claro).
 - **Ghost piece** (`ghostY`): proyecta la posición final de la pieza actual hacia abajo y la dibuja con `globalAlpha = 0.2`.
 
 ### Flujo del juego
@@ -174,6 +178,9 @@ Algunos parámetros fáciles de tunear en `game.js`:
 | `ROWS`         | Filas del tablero                        | `20`                  |
 | `BLOCK`        | Tamaño en píxeles de cada celda          | `30`                  |
 | `COLORS`       | Paleta de colores por tipo de pieza      | 7 colores             |
+| `COLORS_LIGHT` | Paleta de piezas del tema claro          | 7 colores             |
+| `THEME_KEY`    | Clave de `localStorage` del tema         | `'tetris-theme'`      |
+| `DEFAULT_THEME`| Tema inicial si no hay valor guardado    | `'dark'`              |
 | `LINE_SCORES`  | Puntos por 1, 2, 3 o 4 líneas eliminadas | `[0,100,300,500,800]` |
 | `dropInterval` | Velocidad inicial de caída en ms         | `1000`                |
 
